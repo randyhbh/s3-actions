@@ -32,7 +32,7 @@ suspend fun performDeleteRequest(
         .collect { execute(dryRun, it, s3Client) }
 }
 
-private fun toObjectIdentifiers(it: List<Object>) =
+private fun toObjectIdentifiers(it: List<Object>): List<ObjectIdentifier> =
     it.map { s3Object -> ObjectIdentifier { key = s3Object.key } }
 
 private suspend fun execute(
