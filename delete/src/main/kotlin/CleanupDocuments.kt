@@ -10,6 +10,7 @@ fun main(): Unit = runBlocking {
     performDeleteRequest(
         s3Client = s3Client,
         startSearchPrefix = "document/",
-        dryRun = true
+        dryRun = false,
+        bucketName = BucketName("")
     )
 }

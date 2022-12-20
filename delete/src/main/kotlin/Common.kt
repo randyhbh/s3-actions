@@ -9,27 +9,29 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 
-private const val BUCKET = ""
+@JvmInline
+value class BucketName(val value: String)
 
 suspend fun performDeleteRequest(
     s3Client: S3Client,
     startSearchPrefix: String,
-    dryRun: Boolean
+    dryRun: Boolean,
+    bucketName: BucketName
 ) {
     val request = ListObjectsV2Request {
         this.delimiter = "/"
         this.prefix = startSearchPrefix
-        this.bucket = BUCKET
+        this.bucket = bucketName.value
     }
 
     val flowObjectResponse = s3Client.listObjectsV2Paginated(request)
 
     flowObjectResponse
         .onEach { println("Request page size ${it.contents?.size}") }
-        .onCompletion { println("Bucket $BUCKET cleanup successfully!") }
+        .onCompletion { println("Bucket $bucketName cleanup successfully!") }
         .mapNotNull { it.contents }
         .map { toObjectIdentifiers(it) }
-        .collect { execute(dryRun, it, s3Client) }
+        .collect { execute(dryRun, it, s3Client, bucketName) }
 }
 
 private fun toObjectIdentifiers(it: List<Object>): List<ObjectIdentifier> =
@@ -38,11 +40,12 @@ private fun toObjectIdentifiers(it: List<Object>): List<ObjectIdentifier> =
 private suspend fun execute(
     dryRun: Boolean,
     it: List<ObjectIdentifier>,
-    s3Client: S3Client
+    s3Client: S3Client,
+    bucketName: BucketName
 ) {
     return when {
         dryRun -> println("Dry delete of ${it.size} elements")
-        else -> cleanUp(s3Client, BUCKET, it)
+        else -> cleanUp(s3Client, bucketName.value, it)
     }
 }
 

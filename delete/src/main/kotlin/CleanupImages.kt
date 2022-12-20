@@ -11,11 +11,9 @@ fun main(): Unit = runBlocking {
         performDeleteRequest(
             s3Client = s3Client,
             startSearchPrefix = "image/",
-            dryRun = true
+            dryRun = true,
+            bucketName = BucketName("")
         )
     }
     println("Collected in $time ms")
 }
-
-
-
